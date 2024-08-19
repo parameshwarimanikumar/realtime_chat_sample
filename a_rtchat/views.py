@@ -1,3 +1,5 @@
+# views.py
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -164,3 +166,7 @@ def chat_file_upload(request, chatroom_name):
         return render(request, 'a_rtchat/partials/message_content.html', context)
 
     return HttpResponse(status=204)
+
+
+
+#set NODE_OPTIONS=--openssl-legacy-provider

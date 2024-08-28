@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="search-results-container">
+        <h2>Search Results</h2>
+
+        {% if results %}
+            <ul class="search-results-list">
+                {% for message in results %}
+                    <li class="search-result-item">
+                        <div class="message-details">
+                            <p><strong>{{ message.author.username }}</strong> - {{ message.created|date:"d M Y, H:i" }}</p>
+                            <p>{{ message.text|safe }}</p>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No messages found matching "{{ query }}".</p>
+        {% endif %}
+
+        <div class="back-to-chat">
+            <a href="{% url 'chatroom' chatroom_name %}" class="btn btn-primary">Back to Chat</a>
+        </div>
+    </div>
+{% endblock %}
+

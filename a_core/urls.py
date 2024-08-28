@@ -14,21 +14,26 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
+
 from django.contrib import admin
 from django.urls import path, include
-from django.conf.urls.static import static
 from django.conf import settings
+from django.conf.urls.static import static
 from a_users.views import profile_view
-from a_home.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('allauth.urls')),
-    path('', include('a_rtchat.urls')),
-    path('profile/', include('a_users.urls')),
+    path('', include('a_rtchat.urls')),  # Include URLs from a_rtchat
+    path('profile/', include('a_users.urls')),  # Make sure this is correct; it depends on your a_users/urls.py
     path('@<username>/', profile_view, name="profile"),
 ]
 
-# Only used when DEBUG=True, whitenoise can serve files when DEBUG=False
+# Serve media files during development
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# Serve static files during development
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

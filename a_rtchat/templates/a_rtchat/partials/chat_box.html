@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat</title>
+    <link rel="stylesheet" href="path/to/your/tailwind.css">
+</head>
+<body>
+    <div class="bg-white shadow-lg rounded-lg p-4 max-w-md mx-auto mt-8">
+        <h2 class="text-xl font-semibold">{{ other_user.username }}</h2>
+        <div class="chat-messages overflow-y-auto h-80 p-4 border rounded-lg mt-4">
+            {% for message in chat_messages %}
+                <div class="mb-4">
+                    <p class="font-semibold">{{ message.author.username }}</p>
+                    <p>{{ message.text }}</p>
+                    <small class="text-gray-500">{{ message.created }}</small>
+                </div>
+            {% empty %}
+                <p class="text-gray-500">No messages yet.</p>
+            {% endfor %}
+        </div>
+        <form id="chat-form" hx-post="{% url 'send_message' chatroom_name %}" hx-target=".chat-messages" hx-swap="beforeend" class="mt-4">
+            <input type="text" name="message" id="message-input" class="w-full p-2 border rounded-lg focus:outline-none" placeholder="Type a message..." required>
+            <button type="submit" class="hidden">Send</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('chat-form').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the default form submission
+            const formData = new FormData(event.target);
+            fetch(event.target.action, {
+                method: 'POST',
+                body: formData,
+            }).then(response => response.text())
+              .then(() => {
+                  document.getElementById('message-input').value = ''; // Clear input field
+              })
+              .catch(error => console.error('Error:', error));
+        });
+
+        document.getElementById('message-input').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // Prevent the default Enter key action
+                document.getElementById('chat-form').dispatchEvent(new Event('submit')); // Trigger form submit
+            }
+        });
+    </script>
+</body>
+</html>

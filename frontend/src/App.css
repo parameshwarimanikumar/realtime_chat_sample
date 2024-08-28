@@ -1,38 +1,121 @@
+/* General body styles */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  background-color: #f0f0f0; /* Light background */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* App container */
 .App {
-  text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+  height: 100vh;
+}
+
+/* Chat header */
+.chat-header {
+  background-color: #075e54; /* WhatsApp green */
   color: white;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.App-link {
-  color: #61dafb;
+.chat-header .chatroom-name {
+  font-size: 1.5rem;
+  font-weight: bold;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+.chat-header .chat-status {
+  font-size: 0.8rem;
+  color: #aebac1; /* Light gray for status */
+}
+
+/* Chat container for messages */
+.chat-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  background-color: #e5ddd5; /* WhatsApp background */
+}
+
+/* Message bubbles */
+.message-bubble {
+  max-width: 60%;
+  margin: 5px 0;
+  padding: 10px;
+  border-radius: 8px;
+  display: inline-block;
+  position: relative;
+}
+
+.message-sent {
+  background-color: #dcf8c6; /* Light green for sent messages */
+  margin-left: auto;
+  text-align: right;
+}
+
+.message-received {
+  background-color: #ffffff; /* White for received messages */
+  margin-right: auto;
+  text-align: left;
+}
+
+.message-timestamp {
+  font-size: 0.75em;
+  color: #888;
+  margin-top: 5px;
+  text-align: right;
+}
+
+/* Input area for sending messages */
+.message-input-container {
+  background-color: white;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  border-top: 1px solid #ddd;
+}
+
+.message-input {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 20px;
+  background-color: #f0f0f0;
+  font-size: 1rem;
+}
+
+.message-send-btn {
+  background-color: #075e54;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  margin-left: 10px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.message-send-btn:hover {
+  background-color: #128c7e; /* WhatsApp darker green on hover */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .chat-header .chatroom-name {
+    font-size: 1.2rem;
   }
-  to {
-    transform: rotate(360deg);
+
+  .chat-header .chat-status {
+    font-size: 0.7rem;
+  }
+
+  .message-bubble {
+    max-width: 80%; /* Allow more space for messages on smaller screens */
   }
 }

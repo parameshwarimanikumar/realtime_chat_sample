@@ -1,16 +1,21 @@
-# views.py
-
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
-from .models import *
-from .forms import *
+from .models import ChatGroup, GroupMessage
+from .forms import ChatmessageCreateForm, NewGroupForm, ChatRoomEditForm
+from django.db.models import Q
 
+@login_required
+def index(request):
+    users = User.objects.exclude(id=request.user.id)
+    groups = ChatGroup.objects.filter(members=request.user)
+    context = {'users': users, 'groups': groups}
+    return render(request, 'a_rtchat/index.html', context)
 
 @login_required
 def chat_view(request, chatroom_name='public-chat'):
@@ -38,11 +43,24 @@ def chat_view(request, chatroom_name='public-chat'):
             message.author = request.user
             message.group = chat_group
             message.save()
-            context = {
-                'message': message,
-                'user': request.user
-            }
+
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                f'chat_{chatroom_name}',
+                {
+                    'type': 'chat_message',
+                    'message': {
+                        'author': request.user.username,
+                        'text': message.text,
+                        'timestamp': message.created.isoformat(),
+                        'status': 'sent',
+                    }
+                }
+            )
+            context = {'message': message, 'user': request.user}
             return render(request, 'a_rtchat/partials/chat_message_p.html', context)
+        else:
+            return JsonResponse({'error': 'Invalid form submission'}, status=400)
 
     context = {
         'chat_messages': chat_messages,
@@ -51,7 +69,6 @@ def chat_view(request, chatroom_name='public-chat'):
         'chatroom_name': chatroom_name,
         'chat_group': chat_group
     }
-
     return render(request, 'a_rtchat/chat.html', context)
 
 @login_required
@@ -146,7 +163,6 @@ def chat_file_upload(request, chatroom_name):
             group=chat_group,
         )
 
-        # Notify the channel about the new file message
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(
             f'chat_{chatroom_name}',
@@ -159,14 +175,68 @@ def chat_file_upload(request, chatroom_name):
                 }
             }
         )
-        context = {
-            'message': message,
-            'user': request.user
-        }
+        context = {'message': message, 'user': request.user}
         return render(request, 'a_rtchat/partials/message_content.html', context)
 
     return HttpResponse(status=204)
 
+@login_required
+def search_messages(request, chatroom_name):
+    chat_group = get_object_or_404(ChatGroup, group_name=chatroom_name)
+    query = request.GET.get('q', '')
+    if query:
+        results = chat_group.chat_messages.filter(Q(text__icontains=query))
+    else:
+        results = chat_group.chat_messages.none()
 
+    context = {'results': results, 'chatroom_name': chatroom_name, 'chat_group': chat_group}
+    return render(request, 'a_rtchat/search_results.html', context)
 
-#set NODE_OPTIONS=--openssl-legacy-provider
+@login_required
+@csrf_exempt
+def typing_indicator(request, chatroom_name):
+    chat_group = get_object_or_404(ChatGroup, group_name=chatroom_name)
+
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        f'chat_{chatroom_name}',
+        {
+            'type': 'typing_status',
+            'message': {
+                'user': request.user.username,
+                'status': 'typing'
+            }
+        }
+    )
+    return HttpResponse(status=204)
+
+@login_required
+@csrf_exempt
+def send_message(request):
+    if request.method == "POST":
+        message_text = request.POST.get('message')
+        chatroom_name = request.POST.get('chatroom_name')
+        chat_group = get_object_or_404(ChatGroup, group_name=chatroom_name)
+
+        message = GroupMessage.objects.create(
+            text=message_text,
+            author=request.user,
+            group=chat_group,
+        )
+
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f'chat_{chatroom_name}',
+            {
+                'type': 'chat_message',
+                'message': {
+                    'author': request.user.username,
+                    'text': message_text,
+                    'timestamp': message.created.isoformat(),
+                    'status': 'sent',
+                }
+            }
+        )
+        return JsonResponse({'message': message_text, 'author': request.user.username, 'timestamp': message.created.isoformat()})
+
+    return JsonResponse({'error': 'Invalid request'}, status=400)

@@ -12,7 +12,7 @@ from .views import (
     chat_file_upload,
     search_messages,
     typing_indicator,
-    send_message  # Ensure this view exists
+    send_message
 )
 
 urlpatterns = [
@@ -25,7 +25,7 @@ urlpatterns = [
     path('chat/edit/<chatroom_name>', chatroom_edit_view, name="edit-chatroom"),
     path('chat/delete/<chatroom_name>', chatroom_delete_view, name="chatroom-delete"),
     path('chat/leave/<chatroom_name>', chatroom_leave_view, name="chatroom-leave"),
-    path('chat/file_upload/<chatroom_name>', chat_file_upload, name="chat-file-upload"),  # Updated name
+    path('chat/file_upload/<chatroom_name>', chat_file_upload, name="chat-file-upload"),
     path('chat/search/<chatroom_name>', search_messages, name="search-messages"),
     path('chat/typing/<chatroom_name>', typing_indicator, name="typing-indicator"),
     path('chat/send_message/', send_message, name="send_message"),

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Realtime Chat</title>
+    
     <!-- Include Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -51,8 +52,8 @@
                 <h2 class="text-xl font-semibold mb-2">Chats</h2>
                 <ul class="divide-y divide-gray-200">
                     {% for user in users %}
-                        <li class="p-4 hover:bg-gray-100 cursor-pointer">
-                            <a href="{% url 'get_or_create_chatroom' user.username %}" class="flex items-center gap-4">
+                        <li class="p-4 hover:bg-gray-100 cursor-pointer" hx-get="{% url 'get_or_create_chatroom' user.username %}" hx-target="#chat-window" hx-swap="innerHTML">
+                            <a class="flex items-center gap-4">
                                 <img class="h-10 w-10 rounded-full object-cover" src="{{ user.profile.avatar }}" alt="{{ user.username }}">
                                 <span>{{ user.username }}</span>
                             </a>
@@ -68,8 +69,8 @@
                 <h2 class="text-xl font-semibold mb-2">Groups</h2>
                 <ul class="divide-y divide-gray-200">
                     {% for group in groups %}
-                        <li class="p-4 hover:bg-gray-100 cursor-pointer">
-                            <a href="{% url 'chatroom' group.group_name %}" class="flex items-center gap-4">
+                        <li class="p-4 hover:bg-gray-100 cursor-pointer" hx-get="{% url 'chatroom' group.group_name %}" hx-target="#chat-window" hx-swap="innerHTML">
+                            <a class="flex items-center gap-4">
                                 <span class="font-medium">{{ group.group_name }}</span>
                             </a>
                         </li>
@@ -81,16 +82,10 @@
         </aside>
 
         <!-- Main Chat Window -->
-        <main class="w-2/3 bg-gray-50 flex flex-col">
-            <!-- Chat Messages -->
-            <div class="flex-1 overflow-y-auto p-4">
-                <!-- Chat messages will be displayed here -->
-            </div>
+        <main class="w-2/3 bg-gray-50 flex flex-col" id="chat-window">
+            <!-- Chat Messages and Input (Dynamic content loaded here) -->
+            {% include 'E:\Realtime_chat\a_rtchat\templates\a_rtchat\partials\chat_content.html' %}
 
-            <!-- Chat Input -->
-            <div class="p-4 bg-white border-t shadow">
-                <input type="text" placeholder="Type a message..." class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black">
-            </div>
         </main>
     </div>
 </body>

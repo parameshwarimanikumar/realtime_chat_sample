@@ -1,0 +1,18 @@
+<div class="flex flex-col h-full">
+    <!-- Chat Messages -->
+    <div class="flex-1 overflow-y-auto p-4">
+        {% for message in chat_messages %}
+            <div class="mb-2">
+                <span class="font-bold">{{ message.author.username }}:</span> {{ message.text }}
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Chat Input -->
+    <div class="p-4 bg-white border-t shadow">
+        <form hx-post="{% url 'send_message' %}" hx-target="#chat-window" hx-swap="innerHTML">
+            <input type="hidden" name="chatroom_name" value="{{ chatroom_name }}">
+            <input type="text" name="message" placeholder="Type a message..." class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black">
+        </form>
+    </div>
+</div>

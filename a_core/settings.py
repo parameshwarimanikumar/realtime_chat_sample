@@ -76,6 +76,7 @@ TEMPLATES = [
 ]
 
 
+
 ASGI_APPLICATION = 'a_core.asgi.application'
 
 CHANNEL_LAYERS = {
@@ -116,7 +117,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    Path('E:/Chat_app/static'),  # Correct path to your static files
+    Path('E:/Realtime_chat/static'),  # Correct path to your static files
 ]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 

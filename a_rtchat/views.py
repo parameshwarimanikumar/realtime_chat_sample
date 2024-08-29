@@ -6,8 +6,8 @@ from asgiref.sync import async_to_sync
 from django.http import Http404, HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
-from .models import ChatGroup, GroupMessage
-from .forms import ChatmessageCreateForm, NewGroupForm, ChatRoomEditForm
+from .models import *
+from .forms import *
 from django.db.models import Q
 
 @login_required
@@ -170,73 +170,52 @@ def chat_file_upload(request, chatroom_name):
                 'type': 'chat_message',
                 'message': {
                     'author': request.user.username,
-                    'file_url': message.file.url,
-                    'timestamp': message.created.isoformat(),
-                }
-            }
-        )
-        context = {'message': message, 'user': request.user}
-        return render(request, 'a_rtchat/partials/message_content.html', context)
-
-    return HttpResponse(status=204)
-
-@login_required
-def search_messages(request, chatroom_name):
-    chat_group = get_object_or_404(ChatGroup, group_name=chatroom_name)
-    query = request.GET.get('q', '')
-    if query:
-        results = chat_group.chat_messages.filter(Q(text__icontains=query))
-    else:
-        results = chat_group.chat_messages.none()
-
-    context = {'results': results, 'chatroom_name': chatroom_name, 'chat_group': chat_group}
-    return render(request, 'a_rtchat/search_results.html', context)
-
-@login_required
-@csrf_exempt
-def typing_indicator(request, chatroom_name):
-    chat_group = get_object_or_404(ChatGroup, group_name=chatroom_name)
-
-    channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)(
-        f'chat_{chatroom_name}',
-        {
-            'type': 'typing_status',
-            'message': {
-                'user': request.user.username,
-                'status': 'typing'
-            }
-        }
-    )
-    return HttpResponse(status=204)
-
-@login_required
-@csrf_exempt
-def send_message(request):
-    if request.method == "POST":
-        message_text = request.POST.get('message')
-        chatroom_name = request.POST.get('chatroom_name')
-        chat_group = get_object_or_404(ChatGroup, group_name=chatroom_name)
-
-        message = GroupMessage.objects.create(
-            text=message_text,
-            author=request.user,
-            group=chat_group,
-        )
-
-        channel_layer = get_channel_layer()
-        async_to_sync(channel_layer.group_send)(
-            f'chat_{chatroom_name}',
-            {
-                'type': 'chat_message',
-                'message': {
-                    'author': request.user.username,
-                    'text': message_text,
+                    'file': message.file.url,
                     'timestamp': message.created.isoformat(),
                     'status': 'sent',
                 }
             }
         )
-        return JsonResponse({'message': message_text, 'author': request.user.username, 'timestamp': message.created.isoformat()})
+        context = {'message': message}
+        return render(request, 'a_rtchat/partials/chat_message_p.html', context)
+    
+    return HttpResponse('Invalid request', status=400)
 
-    return JsonResponse({'error': 'Invalid request'}, status=400)
+@login_required
+def search_messages(request, chatroom_name):
+    query = request.GET.get('query', '')
+    chat_group = get_object_or_404(ChatGroup, group_name=chatroom_name)
+    messages = chat_group.chat_messages.filter(Q(text__icontains=query))
+
+    return render(request, 'a_rtchat/partials/search_results.html', {'messages': messages})
+
+@login_required
+def typing_indicator(request, chatroom_name):
+    chat_group = get_object_or_404(ChatGroup, group_name=chatroom_name)
+
+    if request.headers.get('HX-Request'):
+        typing = request.POST.get('typing', 'false').lower() == 'true'
+
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f'chat_{chatroom_name}',
+            {
+                'type': 'typing_status',
+                'typing': typing,
+                'user': request.user.username,
+            }
+        )
+        return HttpResponse(status=204)
+
+    return HttpResponse('Invalid request', status=400)
+
+@login_required
+@csrf_exempt
+def send_message(request):
+    if request.method == 'POST':
+        message_text = request.POST.get('text')
+        if message_text:
+            # Handle sending the message
+            return JsonResponse({"status": "success", "message": message_text})
+
+    return JsonResponse({"status": "failure", "error": "Invalid request"}, status=400)

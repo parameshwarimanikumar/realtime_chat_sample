@@ -2,7 +2,7 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 from .views import (
-    index,
+    
     get_or_create_chatroom,
     chat_view,
     create_groupchat,
@@ -16,9 +16,9 @@ from .views import (
 )
 
 urlpatterns = [
-    path('', index, name="index"),
+   
     path('chatroom/<str:username>/', get_or_create_chatroom, name='get_or_create_chatroom'),
-    path('chat/', chat_view, name="home"),
+    path('', chat_view, name="home"),
     path('chat/<username>', get_or_create_chatroom, name="start-chat"),
     path('chat/room/<chatroom_name>', chat_view, name="chatroom"),
     path('chat/new_groupchat/', create_groupchat, name="new-groupchat"),
